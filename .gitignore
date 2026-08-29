@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+archeologist_report.json
+.DS_Store
