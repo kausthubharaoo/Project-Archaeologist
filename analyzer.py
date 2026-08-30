@@ -196,3 +196,8 @@ def main():
 
 if __name__ == "__main__":
     main()
+import json
+
+# Write output directly to file with explicit utf-8 encoding
+with open("report.json", "w", encoding="utf-8") as f:
+    json.dump(analysis, f, indent=4)
