@@ -3,10 +3,10 @@ name: Python Tests
 on:
   push:
     branches:
-      - Swati
+      - Sheershika 2.0
   pull_request:
     branches:
-      - Swati
+      - Sheershika 2.0
 
 jobs:
   test:
