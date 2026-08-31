@@ -10,9 +10,10 @@ from urllib.parse import urlparse, parse_qs
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 WEB_DIR = os.path.join(PROJECT_ROOT, "web")
 
+
 def extract_hotspots(output):
     marker = "POTENTIAL HOTSPOTS"
-    
+
     if marker not in output:
         return "No hotspots found."
 
@@ -21,13 +22,15 @@ def extract_hotspots(output):
     lines = []
     for line in section.splitlines():
         line = line.strip()
-        if line and not line.startswith("-"):
+        if line:
             lines.append(line)
 
     if not lines:
         return "No hotspots found."
 
     return "\n".join(lines)
+
+
 class ProjectArchaeologistHandler(http.server.SimpleHTTPRequestHandler):
 
     def __init__(self, *args, **kwargs):
@@ -41,16 +44,36 @@ class ProjectArchaeologistHandler(http.server.SimpleHTTPRequestHandler):
             return super().do_GET()
 
         if parsed.path == "/api/analyze":
-            self.handle_analysis()
+            query = parse_qs(parsed.query)
+            project_path = query.get("path", [PROJECT_ROOT])[0]
+
+            self.handle_analysis(project_path)
             return
 
         return super().do_GET()
 
-    def handle_analysis(self):
+    def handle_analysis(self, project_path):
         try:
-            # Run main project analyzer
+            if not os.path.isdir(project_path):
+                self.send_json({
+                    "success": False,
+                    "files": 0,
+                    "lines": 0,
+                    "functions": 0,
+                    "todos": 0,
+                    "analysis": "",
+                    "relationships": "",
+                    "hotspots": "",
+                    "error": f"Invalid project folder: {project_path}"
+                }, 400)
+                return
+
             analyzer_result = subprocess.run(
-                [sys.executable, os.path.join(PROJECT_ROOT, "analyzer.py")],
+                [
+                    sys.executable,
+                    os.path.join(PROJECT_ROOT, "analyzer.py"),
+                    project_path
+                ],
                 cwd=PROJECT_ROOT,
                 capture_output=True,
                 text=True,
@@ -60,11 +83,11 @@ class ProjectArchaeologistHandler(http.server.SimpleHTTPRequestHandler):
 
             analyzer_output = analyzer_result.stdout
 
-            # Run relationship analyzer
             relationship_result = subprocess.run(
                 [
                     sys.executable,
-                    os.path.join(PROJECT_ROOT, "relationship_analysis.py")
+                    os.path.join(PROJECT_ROOT, "relationship_analysis.py"),
+                    project_path
                 ],
                 cwd=PROJECT_ROOT,
                 capture_output=True,
@@ -75,7 +98,6 @@ class ProjectArchaeologistHandler(http.server.SimpleHTTPRequestHandler):
 
             relationship_output = relationship_result.stdout
 
-            # Extract numbers from analyzer output
             files_match = re.search(
                 r"Total Files\s*:\s*(\d+)", analyzer_output
             )
@@ -142,20 +164,26 @@ class ProjectArchaeologistHandler(http.server.SimpleHTTPRequestHandler):
         data = json.dumps(response).encode("utf-8")
 
         self.send_response(status_code)
+
         self.send_header(
             "Content-Type",
             "application/json; charset=utf-8"
         )
+
         self.send_header(
             "Content-Length",
             str(len(data))
         )
+
         self.end_headers()
+
         self.wfile.write(data)
 
 
 def run_server():
-    server_address = ("", 8000)
+    port = int(os.environ.get("PORT", 8000))
+
+    server_address = ("0.0.0.0", port)
 
     server = http.server.ThreadingHTTPServer(
         server_address,
@@ -167,7 +195,7 @@ def run_server():
     print("=" * 55)
     print()
     print("Website running at:")
-    print("http://localhost:8000")
+    print(f"http://localhost:{port}")
     print()
     print("Press CTRL+C to stop the server.")
     print()
