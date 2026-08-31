@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Archaeologist</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        header {
+            padding: 35px 0 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 38px;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: #94a3b8;
+            font-size: 16px;
+        }
+
+        .analyzer-box {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 25px;
+        }
+
+        .analyzer-box h2 {
+            margin-bottom: 15px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        input {
+            flex: 1;
+            padding: 14px;
+            border-radius: 8px;
+            border: 1px solid #475569;
+            background: #0f172a;
+            color: white;
+            font-size: 15px;
+        }
+
+        button {
+            padding: 14px 25px;
+            border: none;
+            border-radius: 8px;
+            background: #2563eb;
+            color: white;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .results {
+            margin-top: 25px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .card {
+            background: #1e293b;
+            padding: 22px;
+            border-radius: 10px;
+        }
+
+        .card h3 {
+            color: #94a3b8;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .card .number {
+            font-size: 30px;
+            font-weight: bold;
+        }
+
+        .section {
+            background: #1e293b;
+            margin-top: 20px;
+            padding: 25px;
+            border-radius: 10px;
+        }
+
+        .section h2 {
+            margin-bottom: 15px;
+        }
+
+        #status {
+            margin-top: 15px;
+            color: #94a3b8;
+        }
+
+        @media (max-width: 800px) {
+            .cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .input-row {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <header>
+        <h1>🏛️ Project Archaeologist</h1>
+        <p>Understand unfamiliar and legacy codebases</p>
+    </header>
+
+    <div class="analyzer-box">
+        <h2>Analyze a Project</h2>
+
+        <div class="input-row">
+            <input
+                type="text"
+                id="projectPath"
+                placeholder="Enter project folder path"
+            >
+
+            <button onclick="analyzeProject()">
+                🔍 Analyze
+            </button>
+        </div>
+
+        <div id="status">
+            Ready to analyze.
+        </div>
+    </div>
+
+    <div class="results">
+
+        <div class="cards">
+
+            <div class="card">
+                <h3>FILES</h3>
+                <div class="number" id="files">-</div>
+            </div>
+
+            <div class="card">
+                <h3>LINES OF CODE</h3>
+                <div class="number" id="lines">-</div>
+            </div>
+
+            <div class="card">
+                <h3>FUNCTIONS</h3>
+                <div class="number" id="functions">-</div>
+            </div>
+
+            <div class="card">
+                <h3>TODOs</h3>
+                <div class="number" id="todos">-</div>
+            </div>
+
+        </div>
+
+        <div class="section">
+            <h2>📊 Project Analysis</h2>
+            <p id="analysis">
+                Run an analysis to see project information.
+            </p>
+        </div>
+
+        <div class="section">
+            <h2>🔗 Relationships</h2>
+            <p id="relationships">
+                Relationship analysis will appear here.
+            </p>
+        </div>
+
+        <div class="section">
+            <h2>🔥 Hotspots</h2>
+            <p id="hotspots">
+                Hotspot information will appear here.
+            </p>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+function analyzeProject() {
+
+    const path = document.getElementById("projectPath").value.trim();
+    const status = document.getElementById("status");
+
+    if (!path) {
+        status.textContent = "Please enter a project folder path.";
+        return;
+    }
+
+    status.textContent = "Analyzing project...";
+
+    fetch("/api/analyze?path=" + encodeURIComponent(path))
+        .then(response => response.json())
+        .then(data => {
+
+            if (!data.success) {
+                status.textContent = "Analysis failed: " + data.error;
+                return;
+            }
+
+            status.textContent = "Analysis completed successfully.";
+
+            // Display the main statistics
+            document.getElementById("files").textContent = data.files;
+            document.getElementById("lines").textContent = data.lines;
+            document.getElementById("functions").textContent = data.functions;
+            document.getElementById("todos").textContent = data.todos;
+
+            // Display analysis
+            document.getElementById("analysis").textContent =
+                data.analysis || "No analysis available.";
+
+            // Display relationships
+            document.getElementById("relationships").textContent =
+                data.relationships || "No relationships found.";
+
+            // Display hotspots
+            document.getElementById("hotspots").textContent =
+                data.hotspots || "No hotspots found.";
+        })
+        .catch(error => {
+
+            status.textContent =
+                "Could not connect to Python backend: " + error.message;
+
+        });
+}
+</script>
+
+</body>
+</html>

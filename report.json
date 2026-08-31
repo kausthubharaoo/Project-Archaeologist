@@ -1,0 +1,111 @@
+{
+    "summary": {
+        "root_directory": "D:\\project_analyzer",
+        "total_folders": 0,
+        "total_files": 4,
+        "total_size_kb": 13.86,
+        "total_lines": 433,
+        "total_todos": 15
+    },
+    "file_types": {
+        ".py": 1,
+        ".json": 2,
+        ".md": 1
+    },
+    "ast_analysis": {
+        "python_files": 1,
+        "total_classes": 0,
+        "total_functions": 4,
+        "top_imports": {
+            "argparse": 1,
+            "ast": 1,
+            "json": 1,
+            "os": 1,
+            "re": 1
+        },
+        "class_names": [],
+        "function_names": [
+            "analyze_python_ast",
+            "scan_project",
+            "print_summary",
+            "main"
+        ]
+    },
+    "todos": [
+        {
+            "file": "analyzer.py",
+            "line": 10,
+            "content": "# File extensions to scan for general line counts and TODO comments"
+        },
+        {
+            "file": "analyzer.py",
+            "line": 50,
+            "content": "total_todos = 0"
+        },
+        {
+            "file": "analyzer.py",
+            "line": 53,
+            "content": "todo_list = []"
+        },
+        {
+            "file": "analyzer.py",
+            "line": 90,
+            "content": "if \"TODO\" in line.upper():"
+        },
+        {
+            "file": "analyzer.py",
+            "line": 91,
+            "content": "total_todos += 1"
+        },
+        {
+            "file": "analyzer.py",
+            "line": 92,
+            "content": "todo_list.append({"
+        },
+        {
+            "file": "analyzer.py",
+            "line": 116,
+            "content": "\"total_todos\": total_todos"
+        },
+        {
+            "file": "analyzer.py",
+            "line": 127,
+            "content": "\"todos\": todo_list"
+        },
+        {
+            "file": "analyzer.py",
+            "line": 143,
+            "content": "print(f\"Total TODOs Found  : {summary['total_todos']}\")"
+        },
+        {
+            "file": "analyzer.py",
+            "line": 156,
+            "content": "if data[\"todos\"]:"
+        },
+        {
+            "file": "analyzer.py",
+            "line": 157,
+            "content": "print(\"\\n--- Found TODOs ---\")"
+        },
+        {
+            "file": "analyzer.py",
+            "line": 158,
+            "content": "for item in data[\"todos\"][:5]:"
+        },
+        {
+            "file": "analyzer.py",
+            "line": 160,
+            "content": "if len(data[\"todos\"]) > 5:"
+        },
+        {
+            "file": "analyzer.py",
+            "line": 161,
+            "content": "print(f\"  ... and {len(data['todos']) - 5} more TODOs.\")"
+        },
+        {
+            "file": "README.md",
+            "line": 2,
+            "content": "Project Archaeologist is a zero-dependency CLI tool designed to help developers effortlessly navigate unfamiliar or legacy codebases. By scanning directory structures, Git history, code patterns, TODOs, and key file relationships, it pinpoints hotspots requiring attention and transforms complex repositories into clear, actionable reports."
+        }
+    ]
+}
