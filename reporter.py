@@ -2,10 +2,7 @@ import datetime
 import json
 import statistics
 import textwrap
-
-# Load actual report data directly from your generated JSON file
-with open("report.json", "r", encoding="utf-8") as f:
-    data = json.load(f)
+from mock_data import MOCK_INTEGRATED_DATA
 
 
 #------- HELPER FUNCTIONS -------
@@ -117,9 +114,23 @@ def generate_report(meta_data, file_data, git_data):
 
 if __name__ == "__main__":
     # Test using your mock data ONLY when running this file directly
-    from tests.mock_data import MOCK_INTEGRATED_DATA
+    from mock_data import MOCK_INTEGRATED_DATA
+    
     generate_report(
-    MOCK_INTEGRATED_DATA.get("meta", {}),
-    MOCK_INTEGRATED_DATA.get("file_analysis", MOCK_INTEGRATED_DATA.get("summary_stats", {})),
-    MOCK_INTEGRATED_DATA.get("git_analysis", {})
-)
+        MOCK_INTEGRATED_DATA["meta"],
+        MOCK_INTEGRATED_DATA["file_analysis"],
+        MOCK_INTEGRATED_DATA["git_analysis"]
+    )
+
+if __name__ == "__main__":
+    from mock_data import MOCK_INTEGRATED_DATA
+    
+    print("--- TEST 1: Normal Mock Data ---")
+    generate_report(
+        MOCK_INTEGRATED_DATA["meta"],
+        MOCK_INTEGRATED_DATA["file_analysis"],
+        MOCK_INTEGRATED_DATA["git_analysis"]
+    )
+
+    print("\n--- TEST 2: Empty/Corrupted Input Defense ---")
+    generate_report({}, {}, {})  # Tests completely empty input without crashing
