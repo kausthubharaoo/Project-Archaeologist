@@ -155,7 +155,8 @@ class ProjectArchaeologistHandler(http.server.SimpleHTTPRequestHandler):
 
 
 def run_server():
-    server_address = ("", 8000)
+    port = int(os.environ.get("PORT", 8000))
+    server_address = ("0.0.0.0", port)
 
     server = http.server.ThreadingHTTPServer(
         server_address,
@@ -167,7 +168,7 @@ def run_server():
     print("=" * 55)
     print()
     print("Website running at:")
-    print("http://localhost:8000")
+    print(f"http://0.0.0.0:{port}")
     print()
     print("Press CTRL+C to stop the server.")
     print()
