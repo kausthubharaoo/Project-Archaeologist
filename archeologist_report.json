@@ -1,6 +1,10 @@
 {
     "meta": {},
-    "file_analysis": {},
+    "file_analysis": {
+        "total_lines": 450,
+        "codebase_health": "Good",
+        "hotspots_count": 2
+    },
     "git_analysis": {},
     "calculated_stats": {
         "avg_lines": 0,
