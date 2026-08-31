@@ -54,11 +54,12 @@
         .input-row {
             display: flex;
             gap: 10px;
+            align-items: center;
         }
 
-        input {
+        input[type="file"] {
             flex: 1;
-            padding: 14px;
+            padding: 12px;
             border-radius: 8px;
             border: 1px solid #475569;
             background: #0f172a;
@@ -78,6 +79,11 @@
 
         button:hover {
             background: #1d4ed8;
+        }
+
+        button:disabled {
+            background: #475569;
+            cursor: not-allowed;
         }
 
         .results {
@@ -117,23 +123,19 @@
         .section h2 {
             margin-bottom: 15px;
         }
-#relationships {
-    white-space: pre-line;
-    line-height: 1.8;
-    color: #cbd5e1;
-}
-#hotspots {
-    white-space: pre-line;
-    line-height: 1.8;
-    color: #fbbf24;
-    font-weight: 500;
-}
 
-#analysis {
-    white-space: pre-line;
-    line-height: 1.8;
-    color: #cbd5e1;
-}
+        #relationships,
+        #hotspots,
+        #analysis {
+            white-space: pre-line;
+            line-height: 1.8;
+            color: #cbd5e1;
+        }
+
+        #hotspots {
+            color: #fbbf24;
+            font-weight: 500;
+        }
 
         #status {
             margin-top: 15px;
@@ -147,6 +149,7 @@
 
             .input-row {
                 flex-direction: column;
+                align-items: stretch;
             }
         }
     </style>
@@ -165,19 +168,24 @@
         <h2>Analyze a Project</h2>
 
         <div class="input-row">
+
             <input
-                type="text"
-                id="projectPath"
-                placeholder="Enter project folder path"
+                type="file"
+                id="projectFile"
+                accept=".zip"
             >
 
-            <button onclick="analyzeProject()">
+            <button
+                id="analyzeButton"
+                onclick="analyzeProject()"
+            >
                 🔍 Analyze
             </button>
+
         </div>
 
         <div id="status">
-            Ready to analyze.
+            Choose a project ZIP file to begin.
         </div>
     </div>
 
@@ -210,15 +218,15 @@
         <div class="section">
             <h2>📊 Project Analysis</h2>
             <p id="analysis">
-                Run an analysis to see project information.
+                Upload a project ZIP and run an analysis.
             </p>
         </div>
 
         <div class="section">
             <h2>🔗 Relationships</h2>
             <div id="relationships">
-    Relationship analysis will appear here.
-</div>
+                Relationship analysis will appear here.
+            </div>
         </div>
 
         <div class="section">
@@ -234,54 +242,97 @@
 
 <script>
 
-function analyzeProject() {
+async function analyzeProject() {
 
-    const path = document.getElementById("projectPath").value.trim();
-    const status = document.getElementById("status");
+    const fileInput =
+        document.getElementById("projectFile");
 
-    if (!path) {
-        status.textContent = "Please enter a project folder path.";
+    const status =
+        document.getElementById("status");
+
+    const button =
+        document.getElementById("analyzeButton");
+
+    const file = fileInput.files[0];
+
+    if (!file) {
+        status.textContent =
+            "Please choose a project ZIP file first.";
         return;
     }
 
-    status.textContent = "Analyzing project...";
+    if (!file.name.toLowerCase().endsWith(".zip")) {
+        status.textContent =
+            "Please select a ZIP file.";
+        return;
+    }
 
-    fetch("/api/analyze?path=" + encodeURIComponent(path))
-        .then(response => response.json())
-        .then(data => {
+    status.textContent =
+        "Uploading and analyzing project...";
 
-            if (!data.success) {
-                status.textContent = "Analysis failed: " + data.error;
-                return;
+    button.disabled = true;
+
+    try {
+
+        const response = await fetch(
+            "/api/analyze",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/zip"
+                },
+                body: file
             }
+        );
 
-            status.textContent = "Analysis completed successfully.";
+        const data = await response.json();
 
-            // Display the main statistics
-            document.getElementById("files").textContent = data.files;
-            document.getElementById("lines").textContent = data.lines;
-            document.getElementById("functions").textContent = data.functions;
-            document.getElementById("todos").textContent = data.todos;
-
-            // Display analysis
-            document.getElementById("analysis").textContent =
-                data.analysis || "No analysis available.";
-
-            // Display relationships
-            document.getElementById("relationships").textContent =
-                data.relationships || "No relationships found.";
-
-            // Display hotspots
-            document.getElementById("hotspots").textContent =
-                data.hotspots || "No hotspots found.";
-        })
-        .catch(error => {
+        if (!response.ok || !data.success) {
 
             status.textContent =
-                "Could not connect to Python backend: " + error.message;
+                "Analysis failed: " +
+                (data.error || "Unknown error");
 
-        });
+            return;
+        }
+
+        status.textContent =
+            "Analysis completed successfully.";
+
+        document.getElementById("files").textContent =
+            data.files;
+
+        document.getElementById("lines").textContent =
+            data.lines;
+
+        document.getElementById("functions").textContent =
+            data.functions;
+
+        document.getElementById("todos").textContent =
+            data.todos;
+
+        document.getElementById("analysis").textContent =
+            data.analysis || "No analysis available.";
+
+        document.getElementById("relationships").textContent =
+            data.relationships || "No relationships found.";
+
+        document.getElementById("hotspots").textContent =
+            data.hotspots || "No hotspots found.";
+
+    } catch (error) {
+
+        status.textContent =
+            "Could not connect to Python backend: " +
+            error.message;
+
+    } finally {
+
+        button.disabled = false;
+
+    }
 }
+
 </script>
 
 </body>
